@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>بنك أسئلة PMP — مجال الأشخاص</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body {
+    font-family: 'Segoe UI', Tahoma, 'Arial', sans-serif;
+    background: #f4f6fa;
+    color: #1f2937;
+    line-height: 1.7;
+    min-height: 100vh;
+  }
+  .container { max-width: 960px; margin: 0 auto; padding: 24px 16px; }
+
+  /* Header */
+  header {
+    background: linear-gradient(135deg, #1e40af 0%, #3730a3 100%);
+    color: #fff;
+    padding: 28px 16px;
+    text-align: center;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  }
+  header h1 { font-size: 28px; margin-bottom: 6px; }
+  header p { font-size: 15px; opacity: 0.92; }
+
+  /* Stats bar */
+  .stats-bar {
+    background: #fff;
+    border-radius: 12px;
+    padding: 18px;
+    margin-bottom: 18px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    text-align: center;
+  }
+  .stat-box { padding: 8px; }
+  .stat-num { font-size: 26px; font-weight: 700; color: #1e40af; }
+  .stat-label { font-size: 13px; color: #6b7280; margin-top: 4px; }
+  .stat-num.correct { color: #16a34a; }
+  .stat-num.wrong { color: #dc2626; }
+  .stat-num.percent { color: #7c3aed; }
+
+  /* Filter */
+  .filter-card {
+    background: #fff;
+    border-radius: 12px;
+    padding: 18px;
+    margin-bottom: 18px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+  }
+  .filter-card label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: #374151;
+  }
+  .filter-card select {
+    width: 100%;
+    padding: 10px 12px;
+    font-size: 15px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    background: #fff;
+    font-family: inherit;
+    cursor: pointer;
+    direction: rtl;
+  }
+  .filter-card select:focus { outline: 2px solid #3b82f6; border-color: #3b82f6; }
+  .filter-buttons {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-top: 12px;
+  }
+  .btn {
+    padding: 9px 16px;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+    transition: all 0.15s;
+  }
+  .btn-primary { background: #1e40af; color: #fff; }
+  .btn-primary:hover { background: #1e3a8a; }
+  .btn-secondary { background: #e5e7eb; color: #374151; }
+  .btn-secondary:hover { background: #d1d5db; }
+  .btn-danger { background: #fee2e2; color: #dc2626; }
+  .btn-danger:hover { background: #fecaca; }
+
+  /* Question card */
+  .question-card {
+    background: #fff;
+    border-radius: 12px;
+    padding: 22px;
+    margin-bottom: 16px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+  }
+  .question-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 14px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid #e5e7eb;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .question-num {
+    background: #1e40af;
+    color: #fff;
+    padding: 6px 14px;
+    border-radius: 999px;
+    font-size: 14px;
+    font-weight: 600;
+  }
+  .question-task {
+    font-size: 13px;
+    color: #6b7280;
+    background: #f3f4f6;
+    padding: 5px 12px;
+    border-radius: 6px;
+  }
+  .question-text {
+    font-size: 16px;
+    font-weight: 500;
+    color: #111827;
+    margin-bottom: 16px;
+    line-height: 1.8;
+  }
+
+  /* Options */
+  .options { display: flex; flex-direction: column; gap: 8px; }
+  .option {
+    padding: 12px 14px;
+    border: 2px solid #e5e7eb;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.15s;
+    background: #fafafa;
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    user-select: none;
+  }
+  .option:hover:not(.disabled) {
+    border-color: #3b82f6;
+    background: #eff6ff;
+  }
+  .option.selected {
+    border-color: #3b82f6;
+    background: #dbeafe;
+  }
+  .option.correct {
+    border-color: #16a34a;
+    background: #dcfce7;
+  }
+  .option.wrong {
+    border-color: #dc2626;
+    background: #fee2e2;
+  }
+  .option.disabled { cursor: not-allowed; }
+  .option-letter {
+    background: #fff;
+    border: 1px solid #d1d5db;
+    border-radius: 50%;
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 13px;
+    flex-shrink: 0;
+  }
+  .option.correct .option-letter { background: #16a34a; color: #fff; border-color: #16a34a; }
+  .option.wrong .option-letter { background: #dc2626; color: #fff; border-color: #dc2626; }
+  .option-text { flex: 1; padding-top: 2px; }
+
+  /* Explanation */
+  .explanation {
+    margin-top: 16px;
+    padding: 14px 16px;
+    border-radius: 8px;
+    background: #fef9c3;
+    border-right: 4px solid #ca8a04;
+    animation: fadeIn 0.3s ease-in;
+  }
+  .explanation.correct-banner { background: #dcfce7; border-right-color: #16a34a; }
+  .explanation.wrong-banner { background: #fee2e2; border-right-color: #dc2626; }
+  .explanation-title {
+    font-weight: 700;
+    font-size: 14px;
+    margin-bottom: 6px;
+    color: #374151;
+  }
+  .explanation-text {
+    font-size: 14px;
+    color: #4b5563;
+    line-height: 1.8;
+  }
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-4px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Navigation */
+  .nav-buttons {
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+    margin-top: 14px;
+    flex-wrap: wrap;
+  }
+  .nav-buttons .btn { flex: 1; min-width: 110px; }
+
+  /* Progress bar */
+  .progress {
+    height: 8px;
+    background: #e5e7eb;
+    border-radius: 999px;
+    overflow: hidden;
+    margin-bottom: 14px;
+  }
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #1e40af, #7c3aed);
+    transition: width 0.3s;
+    border-radius: 999px;
+  }
+
+  /* Empty state */
+  .empty {
+    text-align: center;
+    padding: 60px 20px;
+    color: #6b7280;
+  }
+  .empty h2 { font-size: 22px; margin-bottom: 8px; }
+
+  /* Footer */
+  footer {
+    text-align: center;
+    padding: 24px 16px;
+    color: #6b7280;
+    font-size: 13px;
+  }
+
+  /* Mobile */
+  @media (max-width: 600px) {
+    .stats-bar { grid-template-columns: repeat(2, 1fr); }
+    .stat-num { font-size: 22px; }
+    header h1 { font-size: 22px; }
+    .question-text { font-size: 15px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>بنك أسئلة شهادة PMP</h1>
+  <p>مجال الأشخاص (People Domain) — 200 سؤال — وضع التدريب</p>
+</header>
+
+<div class="container">
+
+  <!-- Stats bar -->
+  <div class="stats-bar">
+    <div class="stat-box">
+      <div class="stat-num" id="stat-total">0 / 0</div>
+      <div class="stat-label">السؤال الحالي</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-num correct" id="stat-correct">0</div>
+      <div class="stat-label">إجابات صحيحة</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-num wrong" id="stat-wrong">0</div>
+      <div class="stat-label">إجابات خاطئة</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-num percent" id="stat-percent">—</div>
+      <div class="stat-label">نسبة النجاح</div>
+    </div>
+  </div>
+
+  <!-- Filter -->
+  <div class="filter-card">
+    <label for="task-filter">تصفية حسب المهمة:</label>
+    <select id="task-filter">
+      <option value="all">جميع المهام (200 سؤال)</option>
+    </select>
+    <div class="filter-buttons">
+      <button class="btn btn-secondary" id="btn-shuffle">🔀 خلط الأسئلة</button>
+      <button class="btn btn-danger" id="btn-reset">🔄 إعادة تعيين النتائج</button>
+    </div>
+  </div>
+
+  <!-- Progress -->
+  <div class="progress">
+    <div class="progress-fill" id="progress-fill" style="width: 0%"></div>
+  </div>
+
+  <!-- Question area -->
+  <div id="question-area"></div>
+
+  <!-- Navigation -->
+  <div class="nav-buttons" id="nav-buttons" style="display:none;">
+    <button class="btn btn-secondary" id="btn-prev">→ السابق</button>
+    <button class="btn btn-primary" id="btn-next">التالي ←</button>
+  </div>
+
+</div>
+
+<footer>
+  <p>بنك أسئلة PMP — مجال الأشخاص (42%) — وفق المخطط الرسمي لمحتوى الامتحان يناير 2021</p>
+  <p style="margin-top: 6px;">© منصة تدريبية للدراسة الذاتية</p>
+</footer>
+
+<script src="questions-data.js"></script>
+<script>
+  // State
+  let currentList = [...QUESTIONS];
+  let currentIdx = 0;
+  let answers = {}; // { questionId: { chosen: 'A', correct: true } }
+
+  // DOM
+  const questionArea = document.getElementById('question-area');
+  const navButtons = document.getElementById('nav-buttons');
+  const btnPrev = document.getElementById('btn-prev');
+  const btnNext = document.getElementById('btn-next');
+  const btnShuffle = document.getElementById('btn-shuffle');
+  const btnReset = document.getElementById('btn-reset');
+  const taskFilter = document.getElementById('task-filter');
+  const progressFill = document.getElementById('progress-fill');
+
+  // Arabic task labels
+  const taskLabels = {
+    "Task 1: Manage Conflict": "1. إدارة النزاع",
+    "Task 2: Lead a Team": "2. قيادة الفريق",
+    "Task 3: Support Team Performance": "3. دعم أداء الفريق",
+    "Task 4: Empower Team Members and Stakeholders": "4. تمكين أعضاء الفريق",
+    "Task 5: Ensure Team Training": "5. ضمان التدريب",
+    "Task 6: Build a Team": "6. بناء الفريق",
+    "Task 7: Remove Impediments": "7. إزالة العوائق",
+    "Task 8: Negotiate Project Agreements": "8. التفاوض على الاتفاقيات",
+    "Task 9: Collaborate with Stakeholders": "9. التعاون مع أصحاب المصلحة",
+    "Task 10: Build Shared Understanding": "10. بناء الفهم المشترك",
+    "Task 11: Engage and Support Virtual Teams": "11. الفرق الافتراضية",
+    "Task 12: Define Team Ground Rules": "12. القواعد الأساسية للفريق",
+    "Task 13: Mentor Relevant Stakeholders": "13. التوجيه (Mentoring)",
+    "Task 14: Emotional Intelligence": "14. الذكاء العاطفي"
+  };
+
+  // Populate task filter
+  function populateFilter() {
+    const taskOrder = Object.keys(taskLabels);
+    taskOrder.forEach(taskKey => {
+      const count = QUESTIONS.filter(q => q.task === taskKey).length;
+      const opt = document.createElement('option');
+      opt.value = taskKey;
+      opt.textContent = `${taskLabels[taskKey]} (${count} سؤال)`;
+      taskFilter.appendChild(opt);
+    });
+  }
+
+  // Update stats display
+  function updateStats() {
+    document.getElementById('stat-total').textContent =
+      currentList.length === 0 ? '0 / 0' : `${currentIdx + 1} / ${currentList.length}`;
+
+    // Calculate stats based on answered questions in currentList
+    const answered = currentList.filter(q => answers[q.id]);
+    const correct = answered.filter(q => answers[q.id].correct).length;
+    const wrong = answered.length - correct;
+    const percent = answered.length > 0 ? Math.round((correct / answered.length) * 100) : 0;
+
+    document.getElementById('stat-correct').textContent = correct;
+    document.getElementById('stat-wrong').textContent = wrong;
+    document.getElementById('stat-percent').textContent =
+      answered.length > 0 ? `${percent}%` : '—';
+
+    // Progress bar
+    const pct = currentList.length > 0 ? ((currentIdx + 1) / currentList.length) * 100 : 0;
+    progressFill.style.width = pct + '%';
+  }
+
+  // Render current question
+  function render() {
+    if (currentList.length === 0) {
+      questionArea.innerHTML = `
+        <div class="empty">
+          <h2>لا توجد أسئلة</h2>
+          <p>اختر مهمة من القائمة أعلاه.</p>
+        </div>
+      `;
+      navButtons.style.display = 'none';
+      updateStats();
+      return;
+    }
+
+    const q = currentList[currentIdx];
+    const answered = answers[q.id];
+    const letters = ['A', 'B', 'C', 'D'];
+
+    let optsHTML = q.opts.map((opt, i) => {
+      const letter = letters[i];
+      let cls = 'option';
+      if (answered) {
+        cls += ' disabled';
+        if (letter === q.ans) cls += ' correct';
+        else if (letter === answered.chosen) cls += ' wrong';
+      }
+      return `
+        <div class="${cls}" data-letter="${letter}">
+          <div class="option-letter">${letter}</div>
+          <div class="option-text">${escapeHTML(opt)}</div>
+        </div>
+      `;
+    }).join('');
+
+    let explanationHTML = '';
+    if (answered) {
+      const bannerClass = answered.correct ? 'correct-banner' : 'wrong-banner';
+      const verdict = answered.correct
+        ? '✓ إجابة صحيحة'
+        : `✗ إجابة خاطئة — الإجابة الصحيحة: ${q.ans}`;
+      explanationHTML = `
+        <div class="explanation ${bannerClass}">
+          <div class="explanation-title">${verdict}</div>
+          <div class="explanation-text"><strong>الشرح:</strong> ${escapeHTML(q.exp)}</div>
+        </div>
+      `;
+    }
+
+    questionArea.innerHTML = `
+      <div class="question-card">
+        <div class="question-header">
+          <span class="question-num">السؤال ${currentIdx + 1}</span>
+          <span class="question-task">${taskLabels[q.task] || q.task}</span>
+        </div>
+        <div class="question-text">${escapeHTML(q.q)}</div>
+        <div class="options">${optsHTML}</div>
+        ${explanationHTML}
+      </div>
+    `;
+
+    // Attach click handlers (only if not yet answered)
+    if (!answered) {
+      questionArea.querySelectorAll('.option').forEach(el => {
+        el.addEventListener('click', () => {
+          const letter = el.dataset.letter;
+          answers[q.id] = { chosen: letter, correct: letter === q.ans };
+          render();
+        });
+      });
+    }
+
+    navButtons.style.display = 'flex';
+    btnPrev.disabled = currentIdx === 0;
+    btnNext.disabled = currentIdx === currentList.length - 1;
+    btnPrev.style.opacity = btnPrev.disabled ? '0.5' : '1';
+    btnNext.style.opacity = btnNext.disabled ? '0.5' : '1';
+
+    updateStats();
+  }
+
+  function escapeHTML(s) {
+    return String(s)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
+
+  function shuffle(arr) {
+    const a = [...arr];
+    for (let i = a.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+  }
+
+  function applyFilter() {
+    const v = taskFilter.value;
+    if (v === 'all') {
+      currentList = [...QUESTIONS];
+    } else {
+      currentList = QUESTIONS.filter(q => q.task === v);
+    }
+    currentIdx = 0;
+    render();
+  }
+
+  // Events
+  btnPrev.addEventListener('click', () => {
+    if (currentIdx > 0) { currentIdx--; render(); }
+  });
+  btnNext.addEventListener('click', () => {
+    if (currentIdx < currentList.length - 1) { currentIdx++; render(); }
+  });
+  btnShuffle.addEventListener('click', () => {
+    currentList = shuffle(currentList);
+    currentIdx = 0;
+    render();
+  });
+  btnReset.addEventListener('click', () => {
+    if (confirm('هل تريد بالتأكيد مسح جميع الإجابات وإعادة البدء؟')) {
+      answers = {};
+      currentIdx = 0;
+      render();
+    }
+  });
+  taskFilter.addEventListener('change', applyFilter);
+
+  // Keyboard navigation
+  document.addEventListener('keydown', (e) => {
+    if (e.target.tagName === 'SELECT') return;
+    // RTL: ArrowLeft = next, ArrowRight = prev
+    if (e.key === 'ArrowLeft' && currentIdx < currentList.length - 1) {
+      currentIdx++; render();
+    } else if (e.key === 'ArrowRight' && currentIdx > 0) {
+      currentIdx--; render();
+    } else if (['1','2','3','4','a','A','b','B','c','C','d','D'].includes(e.key)) {
+      const map = {'1':'A','2':'B','3':'C','4':'D','a':'A','A':'A','b':'B','B':'B','c':'C','C':'C','d':'D','D':'D'};
+      const q = currentList[currentIdx];
+      if (q && !answers[q.id]) {
+        const letter = map[e.key];
+        answers[q.id] = { chosen: letter, correct: letter === q.ans };
+        render();
+      }
+    }
+  });
+
+  // Init
+  populateFilter();
+  render();
+</script>
+
+</body>
+</html>
